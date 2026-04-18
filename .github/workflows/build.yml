@@ -25,16 +25,28 @@ jobs:
     - name: SDK Hazırla
       run: |
         SDKPATH="$HOME/.buildozer/android/platform/android-sdk"
+        REALPATH="/usr/local/lib/android/sdk"
         mkdir -p $SDKPATH/tools/bin
         mkdir -p $SDKPATH/licenses
-        printf '#!/bin/bash\nexec /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager "$@"\n' > $SDKPATH/tools/bin/sdkmanager
+
+        # sdkmanager wrapper
+        printf '#!/bin/bash\nexec %s/cmdline-tools/latest/bin/sdkmanager "$@"\n' $REALPATH > $SDKPATH/tools/bin/sdkmanager
         chmod +x $SDKPATH/tools/bin/sdkmanager
+
+        # android wrapper
+        printf '#!/bin/bash\nexec %s/tools/bin/android "$@"\n' $REALPATH > $SDKPATH/tools/bin/android
+        chmod +x $SDKPATH/tools/bin/android
+
+        # Lisanslar
         echo "24333f8a63b6825ea9c5514f83c2829b004d1fee" > $SDKPATH/licenses/android-sdk-license
         echo "d56f5187479451eabf01fb78af6dfcb131a6481e" >> $SDKPATH/licenses/android-sdk-license
         echo "84831b9409646a918e30573bab4c9c91346d8abd" > $SDKPATH/licenses/android-sdk-preview-license
-        ln -sfn /usr/local/lib/android/sdk/platform-tools $SDKPATH/platform-tools
-        ln -sfn /usr/local/lib/android/sdk/build-tools $SDKPATH/build-tools
-        ln -sfn /usr/local/lib/android/sdk/platforms $SDKPATH/platforms
+
+        # Linkler
+        ln -sfn $REALPATH/platform-tools $SDKPATH/platform-tools
+        ln -sfn $REALPATH/build-tools $SDKPATH/build-tools
+        ln -sfn $REALPATH/platforms $SDKPATH/platforms
+        ln -sfn $REALPATH/cmdline-tools $SDKPATH/cmdline-tools
 
     - name: APK Derle
       run: buildozer android debug
