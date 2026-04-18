@@ -1,3 +1,5 @@
+name: Zedin Browser APK
+
 on:
   push:
     branches: [ main ]
@@ -5,15 +7,15 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
     steps:
     - uses: actions/checkout@v3
-    
+
     - name: Python Kur
       uses: actions/setup-python@v4
       with:
         python-version: '3.10'
-    
+
     - name: Java Kur
       uses: actions/setup-java@v3
       with:
@@ -24,29 +26,31 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y \
-          python3-pip build-essential git \
+          python3-pip build-essential git zip unzip \
           ffmpeg libsdl2-dev libsdl2-image-dev \
           libsdl2-mixer-dev libsdl2-ttf-dev \
           libportmidi-dev libswscale-dev \
           libavformat-dev libavcodec-dev zlib1g-dev
         pip install buildozer cython
 
-    - name: Android SDK Lisanslarını Kabul Et
+    - name: SDK Lisanslarını Kabul Et
       run: |
-        mkdir -p $HOME/.android
-        echo "count=0" > $HOME/.android/repositories.cfg
-        yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager \
-          --licenses || true
-        yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager \
-          "platform-tools" \
-          "build-tools;34.0.0" \
-          "platforms;android-33" || true
+        mkdir -p $HOME/.buildozer/android/platform/android-sdk/licenses
+        echo "24333f8a63b6825ea9c5514f83c2829b004d1fee" > \
+          $HOME/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
+        echo "d56f5187479451eabf01fb78af6dfcb131a6481e" >> \
+          $HOME/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
+        echo "24333f8a63b6825ea9c5514f83c2829b004d1fee" >> \
+          $HOME/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
+        mkdir -p $HOME/.buildozer/android/platform/android-sdk/licenses
+        echo "84831b9409646a918e30573bab4c9c91346d8abd" > \
+          $HOME/.buildozer/android/platform/android-sdk/licenses/android-sdk-preview-license
 
     - name: APK Derle
       run: |
         buildozer android debug
 
-    - name: APK'yı Yükle
+    - name: APK Yükle
       uses: actions/upload-artifact@v4
       with:
         name: zedin-browser
