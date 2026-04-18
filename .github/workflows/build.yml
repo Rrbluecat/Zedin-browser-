@@ -16,48 +16,27 @@ jobs:
       with:
         python-version: '3.10'
 
-    - name: Java Kur
-      uses: actions/setup-java@v3
-      with:
-        distribution: 'temurin'
-        java-version: '17'
-
     - name: Bağımlılıkları Kur
       run: |
         sudo apt-get update
         sudo apt-get install -y \
           python3-pip build-essential git zip unzip \
-          ffmpeg libsdl2-dev libsdl2-image-dev \
-          libsdl2-mixer-dev libsdl2-ttf-dev \
-          libportmidi-dev libswscale-dev \
-          libavformat-dev libavcodec-dev zlib1g-dev
+          libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev \
+          libsdl2-ttf-dev libportmidi-dev zlib1g-dev
         pip install buildozer cython
 
-    - name: SDK'yı Buildozer Klasörüne Kur
+    - name: Lisansları Kabul Et
       run: |
-        # Buildozer'ın beklediği tam yolu oluştur
-        SDKPATH="$HOME/.buildozer/android/platform/android-sdk"
-        mkdir -p $SDKPATH/cmdline-tools
-        
-        # cmdline-tools indir
-        wget -q https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
-        unzip -q commandlinetools-linux-9477386_latest.zip -d $SDKPATH/cmdline-tools
-        mv $SDKPATH/cmdline-tools/cmdline-tools $SDKPATH/cmdline-tools/latest
-        
-        SDKMANAGER="$SDKPATH/cmdline-tools/latest/bin/sdkmanager"
-        
-        # Lisansları oluştur
-        mkdir -p $SDKPATH/licenses
-        echo "24333f8a63b6825ea9c5514f83c2829b004d1fee" > $SDKPATH/licenses/android-sdk-license
-        echo "d56f5187479451eabf01fb78af6dfcb131a6481e" >> $SDKPATH/licenses/android-sdk-license
-        echo "84831b9409646a918e30573bab4c9c91346d8abd" > $SDKPATH/licenses/android-sdk-preview-license
-        
-        # Gerekli araçları kur
-        yes | $SDKMANAGER --sdk_root=$SDKPATH \
-          "platform-tools" \
-          "build-tools;34.0.0" \
-          "platforms;android-33" \
-          "tools" || true
+        mkdir -p /usr/local/lib/android/sdk/licenses
+        echo "24333f8a63b6825ea9c5514f83c2829b004d1fee" > /usr/local/lib/android/sdk/licenses/android-sdk-license
+        echo "d56f5187479451eabf01fb78af6dfcb131a6481e" >> /usr/local/lib/android/sdk/licenses/android-sdk-license
+        echo "84831b9409646a918e30573bab4c9c91346d8abd" > /usr/local/lib/android/sdk/licenses/android-sdk-preview-license
+
+    - name: Buildozer SDK Yolunu Ayarla
+      run: |
+        mkdir -p $HOME/.buildozer/android/platform
+        ln -sfn /usr/local/lib/android/sdk \
+          $HOME/.buildozer/android/platform/android-sdk
 
     - name: APK Derle
       run: |
