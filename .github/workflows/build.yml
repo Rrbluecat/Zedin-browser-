@@ -33,29 +33,31 @@ jobs:
           libavformat-dev libavcodec-dev zlib1g-dev
         pip install buildozer cython
 
-    - name: Android SDK İndir ve Kur
+    - name: SDK'yı Buildozer Klasörüne Kur
       run: |
-        cd $HOME
+        # Buildozer'ın beklediği tam yolu oluştur
+        SDKPATH="$HOME/.buildozer/android/platform/android-sdk"
+        mkdir -p $SDKPATH/cmdline-tools
+        
+        # cmdline-tools indir
         wget -q https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
-        mkdir -p android-sdk/cmdline-tools
-        unzip -q commandlinetools-linux-9477386_latest.zip -d android-sdk/cmdline-tools
-        mv android-sdk/cmdline-tools/cmdline-tools android-sdk/cmdline-tools/latest
-        export ANDROID_SDK_ROOT=$HOME/android-sdk
-        export PATH=$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin
-        mkdir -p $ANDROID_SDK_ROOT/licenses
-        echo "24333f8a63b6825ea9c5514f83c2829b004d1fee" > $ANDROID_SDK_ROOT/licenses/android-sdk-license
-        echo "d56f5187479451eabf01fb78af6dfcb131a6481e" >> $ANDROID_SDK_ROOT/licenses/android-sdk-license
-        echo "84831b9409646a918e30573bab4c9c91346d8abd" > $ANDROID_SDK_ROOT/licenses/android-sdk-preview-license
-        yes | sdkmanager --sdk_root=$ANDROID_SDK_ROOT \
+        unzip -q commandlinetools-linux-9477386_latest.zip -d $SDKPATH/cmdline-tools
+        mv $SDKPATH/cmdline-tools/cmdline-tools $SDKPATH/cmdline-tools/latest
+        
+        SDKMANAGER="$SDKPATH/cmdline-tools/latest/bin/sdkmanager"
+        
+        # Lisansları oluştur
+        mkdir -p $SDKPATH/licenses
+        echo "24333f8a63b6825ea9c5514f83c2829b004d1fee" > $SDKPATH/licenses/android-sdk-license
+        echo "d56f5187479451eabf01fb78af6dfcb131a6481e" >> $SDKPATH/licenses/android-sdk-license
+        echo "84831b9409646a918e30573bab4c9c91346d8abd" > $SDKPATH/licenses/android-sdk-preview-license
+        
+        # Gerekli araçları kur
+        yes | $SDKMANAGER --sdk_root=$SDKPATH \
           "platform-tools" \
           "build-tools;34.0.0" \
-          "platforms;android-33" || true
-        echo "ANDROID_SDK_ROOT=$HOME/android-sdk" >> $GITHUB_ENV
-
-    - name: Buildozer Ayarla
-      run: |
-        mkdir -p $HOME/.buildozer/android/platform
-        ln -s $HOME/android-sdk $HOME/.buildozer/android/platform/android-sdk
+          "platforms;android-33" \
+          "tools" || true
 
     - name: APK Derle
       run: |
