@@ -25,18 +25,31 @@ jobs:
           libsdl2-ttf-dev libportmidi-dev zlib1g-dev
         pip install buildozer cython
 
-    - name: Lisansları Kabul Et
+    - name: SDK Yapısını Hazırla
       run: |
-        mkdir -p /usr/local/lib/android/sdk/licenses
-        echo "24333f8a63b6825ea9c5514f83c2829b004d1fee" > /usr/local/lib/android/sdk/licenses/android-sdk-license
-        echo "d56f5187479451eabf01fb78af6dfcb131a6481e" >> /usr/local/lib/android/sdk/licenses/android-sdk-license
-        echo "84831b9409646a918e30573bab4c9c91346d8abd" > /usr/local/lib/android/sdk/licenses/android-sdk-preview-license
-
-    - name: Buildozer SDK Yolunu Ayarla
-      run: |
-        mkdir -p $HOME/.buildozer/android/platform
-        ln -sfn /usr/local/lib/android/sdk \
-          $HOME/.buildozer/android/platform/android-sdk
+        SDKPATH="$HOME/.buildozer/android/platform/android-sdk"
+        REALSDKMANAGER="/usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager"
+        
+        # Buildozer'ın beklediği eski yolu oluştur
+        mkdir -p $SDKPATH/tools/bin
+        mkdir -p $SDKPATH/licenses
+        
+        # Wrapper oluştur - eski yola çağrı gelince yeni sdkmanager'a yönlendir
+        cat > $SDKPATH/tools/bin/sdkmanager << 'EOF'
+#!/bin/bash
+exec /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager "$@"
+EOF
+        chmod +x $SDKPATH/tools/bin/sdkmanager
+        
+        # Lisansları oluştur
+        echo "24333f8a63b6825ea9c5514f83c2829b004d1fee" > $SDKPATH/licenses/android-sdk-license
+        echo "d56f5187479451eabf01fb78af6dfcb131a6481e" >> $SDKPATH/licenses/android-sdk-license
+        echo "84831b9409646a918e30573bab4c9c91346d8abd" > $SDKPATH/licenses/android-sdk-preview-license
+        
+        # platform-tools ve build-tools linkle
+        ln -sfn /usr/local/lib/android/sdk/platform-tools $SDKPATH/platform-tools
+        ln -sfn /usr/local/lib/android/sdk/build-tools $SDKPATH/build-tools
+        ln -sfn /usr/local/lib/android/sdk/platforms $SDKPATH/platforms
 
     - name: APK Derle
       run: |
