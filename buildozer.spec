@@ -5,7 +5,7 @@ package.domain = com.rrbluecat
 source.dir = .
 source.include_exts = py,png,jpg,kv,atlas
 version = 0.1
-requirements = python3,kivy,android
+requirements = python3,kivy==2.1.0,android
 orientation = portrait
 fullscreen = 0
 
